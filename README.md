@@ -122,9 +122,9 @@ Pour surpasser le modèle Naïf, les modèles Holt-Winters et XGBoost intègrent
 
 ---
 ## 📁 Contenu de cette branche
-* `walmart_forecast_final.py` : Moteur d'analyse complet (Traitement, Benchmark, Forecast).
-* `Walmart_Source_PowerBI` : Fichier source utilisé pour Power BI (j'ai volontairement scindé l'Excel généré par le script, du fichier source alimentant mon rapport afin d'en faciliter la mise à jour).
-* `Walmart Dashboard` : Répertoire de sortie contenant les données structurées pour la visualisation (Historiques, Audit des erreurs, Synthèse consolidée).
+* `ScriptWalmart.py` : Moteur d'analyse complet (Traitement, Benchmark, Forecast).
+* `Walmart_Source_PowerBI.xlsx` : Fichier source utilisé pour Power BI (j'ai volontairement scindé l'Excel généré par le script, du fichier source alimentant mon rapport afin d'en faciliter la mise à jour).
+* `Walmart Dashboard.pbix` : Répertoire de sortie contenant les données structurées pour la visualisation (Historiques, Audit des erreurs, Synthèse consolidée).
 
 ## ➡️ Prochaine étape
 L'étape 2 permet de découvrir l'outil de pilotage sous **Power BI**.
