@@ -42,12 +42,12 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 
 ### 2. Analyse de l'incertitude
 
-| Indicateur | Valeur | Impact Stratégique |
+| Indicateur | Valeur   | Impact Stratégique |
 | :---- | :---- | :---- |
-| **Ratio d'incertitude** | **4.72x** | Le risque de rupture est 4.7 fois plus élevé lors des pics d'activité saisonniers |
-| **Incertitude Baseline** | **3.88 %** | Précision de 96.12% dans 90% de l'année (optimisation du BFR). |
-| **Incertitude Pics** | **18.31 %** | Marge de sécurité nécessaire pour couvrir la volatilité des pics et assurer les ventes sans passer par la rupture de stocks. |
-| **Valeur du point de WAPE** | **~471 k$** | Pour chaque point d'incertitude réduit, le BFR peut-etre optisé en réduisant les dépenses liées aux stocks|
+| **Ratio d'incertitude** | **4.72x**  | Le risque de rupture est 4.7 fois plus élevé lors des pics d'activité saisonniers |
+| **Incertitude Baseline** | **3.88 %**  | Précision de 96.12% dans 90% de l'année (optimisation du BFR). |
+| **Incertitude Pics** | **18.31 %**  | Marge de sécurité nécessaire pour couvrir la volatilité des pics et assurer les ventes sans passer par la rupture de stocks. |
+| **Valeur du point de WAPE** | **~471 k$**  | Pour chaque point d'incertitude réduit, le BFR peut-etre optisé en réduisant les dépenses liées aux stocks|
 
 > **💡 Diagnostic :** En isolant le régime "pics" le chiffre d'affaires est sécurisé. On accepte une incertitude de 18.31% sur les 10% des semaines avec les plus fortes ventes pour garantir un taux de service maximal, tout en maintenant une gestion tendue le reste de l'année (incertitude de 3.88% pour la baseline).
 
