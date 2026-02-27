@@ -87,8 +87,6 @@ FACTEUR_INCERTITUDE = 1.5
 HORIZON = 8
 HORIZON_TEST = 26
 
-
-
 for store_id in stores:
     temp = df[df["Store"] == store_id].sort_values("ds").reset_index(drop=True)
     temp["lag_1"], temp["lag_4"], temp["lag_52"] = temp["y"].shift(1), temp["y"].shift(4), temp["y"].shift(52)
@@ -175,7 +173,7 @@ for store_id in stores:
         _, is_peak = get_weekly_flags(row['ds'])
         local_err = (best_wape / 100) * FACTEUR_INCERTITUDE
         if is_peak:
-            local_err *= hetero_ratio # Elargissement des bornes pendant les pics
+            local_err *= np.sqrt(hetero_ratio) # On tempère l'effet de l'hétéroscédasticité
         return row['Ventes'] * (1 + local_err), row['Ventes'] * (1 - local_err), int(not is_peak)
 
     res = p_data.apply(calc_adaptive_bounds_with_flag, axis=1)
@@ -225,31 +223,30 @@ with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
         writer.sheets[s].set_column('C:F', None, fmt)
 
 # =============================================================================
-# 5. BLOC D'ANALYSE DESCRIPTIVE (LOGIQUE RATIO SIGMA)
+# 5. BLOC D'ANALYSE DESCRIPTIVE (CONSOLIDATION FINALE)
 # =============================================================================
+# Calculs préparatoires
 std_base = df_conso_audit[df_conso_audit['y'] <= p90_threshold]['y'].std()
 std_peak = df_conso_audit[df_conso_audit['y'] > p90_threshold]['y'].std()
 ratio_sigma = std_peak / std_base
+coeff_lissage = np.sqrt(ratio_sigma)
 
-df_base_stats = df_conso_audit[df_conso_audit['y'] <= p90_threshold]
-df_peak_stats = df_conso_audit[df_conso_audit['y'] > p90_threshold]
+wape_champion = (df_audit_results["WAPE_Champion"] * df_audit_results["Poids"]).sum()
+marge_baseline = wape_champion * FACTEUR_INCERTITUDE
+# La marge Pics conserve le buffer (1.5) et y applique le lissage racine
+marge_pics = marge_baseline * coeff_lissage 
 
-mu_base, mu_peak = df_base_stats['y'].mean(), df_peak_stats['y'].mean()
-cv_base, cv_peak = (std_base / mu_base) * 100, (std_peak / mu_peak) * 100
-wape_base = (df_audit_results["WAPE_Champion"] * df_audit_results["Poids"]).sum()
-wape_peak = wape_base * ratio_sigma
-
-print("\n" + "="*85)
-print(f"{'Métrique Stratégique':<25} | {'REGIME 1 (Baseline)':<25} | {'REGIME 2 (Pics)':<25}")
-print("-" * 85)
-print(f"{'Nb. Semaines':<25} | {len(df_base_stats)} (90%){' ':<17} | {len(df_peak_stats)} (10%)")
-print(f"{'CA Moyen (μ)':<25} | {mu_base:,.0f} ${' ':<12} | {mu_peak:,.0f} $")
-print(f"{'Écart-type (σ)':<25} | {std_base:,.0f} ${' ':<12} | {std_peak:,.0f} $")
-print(f"{'Volatilité (CV)':<25} | {cv_base:>6.2f} %{' ':<16} | {cv_peak:>6.2f} %")
-print(f"{'Amplitude CA':<25} | [{df_base_stats['y'].min()/1e6:.1f}M$ - {df_base_stats['y'].max()/1e6:.1f}M$] | [{df_peak_stats['y'].min()/1e6:.1f}M$ - {df_peak_stats['y'].max()/1e6:.1f}M$]")
-print(f"{'WAPE (Logique σ)':<25} | {wape_base:>6.2f} %{' ':<16} | {wape_peak:>6.2f} %")
-print("-" * 85)
-print(f"{'Ratio Hétéroscédastique':<25} | Coefficient multiplicateur appliqué : {ratio_sigma:.2f}x")
-print("="*85)
-
-print(f"\n✅ OPÉRATION TERMINÉE : Fichier généré dans {filename}")
+print("\n" + "="*95)
+print(f"{'Métrique Stratégique':<25} | {'REGIME 1 (Baseline)':<30} | {'REGIME 2 (Pics)':<30}")
+print("-" * 95)
+print(f"{'Nb. Semaines':<25} | {len(df_base_stats)} (90%){' ':<22} | {len(df_peak_stats)} (10%)")
+print(f"{'CA Moyen (μ)':<25} | {mu_base:,.0f} ${' ':<17} | {mu_peak:,.0f} $")
+print(f"{'Écart-type (σ)':<25} | {std_base:,.0f} ${' ':<17} | {std_peak:,.0f} $")
+print(f"{'Volatilité (CV)':<25} | {cv_base:>6.2f} %{' ':<21} | {cv_peak:>6.2f} %")
+print(f"{'Amplitude CA':<25} | [{df_base_stats['y'].min()/1e6:.1f}M$ - {df_base_stats['y'].max()/1e6:.1f}M$]{' ':<10} | [{df_peak_stats['y'].min()/1e6:.1f}M$ - {df_peak_stats['y'].max()/1e6:.1f}M$]")
+print("-" * 95)
+print(f"{'Erreur Brute (WAPE)':<25} | {wape_champion:>6.2f} % (Champion){' ':<13} | {wape_champion * ratio_sigma:>6.2f} % (Projeté)")
+print(f"{'Marge de Sécurité':<25} | {marge_baseline:>6.2f} % (Buffer 1.5x){' ':<10} | {marge_pics:>6.2f} % (Buffer + Lissage)")
+print("-" * 95)
+print(f"{'Ajustement Risque':<25} | Ratio Sigma Brut : {ratio_sigma:.2f}x | Coeff Lissage (sqrt) : {coeff_lissage:.2f}x")
+print("="*95)
