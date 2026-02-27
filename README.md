@@ -49,7 +49,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 | **Marge Pics (Lissée)** | **12.64 %** | Protection renforcée via lissage $\sqrt{\sigma}$ pour optimiser le BFR. |
 | **Valeur du point de WAPE** | **~471 k$** | Gain potentiel sur le BFR pour chaque point d'incertitude réduit. |
 
-> **💡 Diagnostic :** En isolant le régime "pics" le chiffre d'affaires est sécurisé. On accepte une incertitude de 18.31% sur les 10% des semaines avec les plus fortes ventes pour garantir un taux de service maximal, tout en maintenant une gestion tendue le reste de l'année (incertitude de 3.88% pour la baseline).
+> **💡 Diagnostic :** En isolant le régime "pics", le chiffre d'affaires est sécurisé sans immobilisation excessive de capital. On accepte une incertitude de 12.64 % sur les 10 % des semaines de forte activité (au lieu des 18.31 % théoriques non lissés) pour garantir un taux de service maximal, tout en maintenant une gestion en flux tendus le reste de l'année (5.82 % de marge pour la baseline).
 
 
 ## 🛠️ Conception & Explication du Benchmark
