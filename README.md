@@ -82,9 +82,9 @@ Plutôt que d'appliquer des bornes fixes, le modèle adapte ses intervalles de c
 | Régime Détecté | Logique d'Incertitude | Marge de Sécurité | Stratégie de Stock |
 | :--- | :--- | :--- | :--- |
 | **Baseline** | Erreur brute $\times$ Buffer | **5.82 %** | **Flux tendus** : Immobilisation financière minimale. |
-| **Extreme Peaks** | Buffer $\times$ Lissage $\sqrt{\sigma}$ | **12.64 %** | **Risk-Off** : Couverture des pics sans surstockage abusif. |
+| **Extreme Peaks** | Erreur brute $\times$ Buffer $\times$ Lissage $\sqrt{\sigma}$ | **12.64 %** | **Risk-Off** : Couverture des pics sans surstockage abusif. |
 
-> **💡 Note :** Le passage du WAPE de 3.88% à 18.31% n'est pas une perte de performance, mais une **calibration sur le risque réel**. En multipliant les bornes de confiance par **4.72** lors des pics, le modèle garantit un taux de service optimal là où un modèle standard et l'utilisation d'une moyenne provoquerait des ruptures massives.
+> **💡 Note :** L'élargissement de l'enveloppe de sécurité (de 5.82% à 12.64%) n'est pas une dégradation de la performance du modèle, mais une calibration dynamique sur le risque réel. Bien que la volatilité brute soit multipliée par 4.72, l'ajustement par lissage (racine carrée de 4.72 = 2,17) permet de garantir un taux de service optimal durant les pics, là où un modèle standard (homoscédastique) provoquerait des ruptures massives par sous-estimation du risque.
 
 ---
 
