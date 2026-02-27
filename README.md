@@ -16,7 +16,6 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 #### Analyse : D'après la période étudiée (données de début 2010 à fin 2011), l'activité des 45 magasins Walmart est extremement saisonnière, notre distribution prend une forme bimodale (deux modes d'activité), ce qui justifie une approche poussée via Python.
 
 #### Conséquence : L'intensité de l'activité est représentée par deux régimes distincts (baseline / pics) pour lesquels les intervalles de confiance doivent être adaptés dynamiquement pour refléter la différence de tailles des erreurs (hétéroscédasticité) entre les deux régimes.
-- La vérification de la taille des erreurs (hétéroscédasticité), représentée ici par le WAPE (Weighted Absolute Percentage Error) permet de prouver que plus le montant des ventes augmente, plus l'écart entre la prévision et la donnée réelle tend à etre élevée.
 - Exemple : En scénario stable les déviations à la moyenne (écart-type, unité qui mesure l'intensité de la dispersion des données autour de leur moyenne) vont etre beaucoup plus faibles que sur les scénarios de pics d'activité. Plus simplement, la série a tendance à rompre sa moyenne momentanément, ces moments doivent faire l'objet d'une attention particulière.
 
 ## 📊 Statistiques Descriptives
