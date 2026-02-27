@@ -54,7 +54,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 
 ## 🛠️ Conception & Explication du Benchmark
 - Le script "ScriptWalmart.py" présent en pièce-jointe fait concourir **3 approches** sur une période de validation étendue, puis sélectionne dynamiquement la plus performante pour chaque magasin.
-- Le modèle est entrainé sur environ 1 ans et demi de données puis est évalué sur un horizon de 26 points de données hebdomadaires consolidées **soit 26 semaines (~6 mois)**.
+- Le modèle est entrainé sur environ 2 ans de données hebdomadaires puis est évalué sur un horizon de 26 points de données hebdomadaires consolidées **soit 26 semaines (~6 mois)**.
 
 ---
 
