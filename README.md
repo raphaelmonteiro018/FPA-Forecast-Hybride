@@ -35,7 +35,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 | **Amplitude CA** | [39.6M$ - 49.8M$] | [49.9M$ - 80.9M$] |
 
 > **💡 Diagnostic :**
-> - L'écart-type est multiplié par **4.7** lors du passage de l'activité "normale" aux pics. Cette explosion de la volatilité des ventes prouve l'**hétéroscédasticité** de la série (l'erreur de prévision n'est pas constante).
+> - L'écart-type est multiplié par **4.7** lors du passage de l'activité "normale" aux pics. Cette explosion de la volatilité des ventes implique l'**hétéroscédasticité** de la série (l'erreur de prévision n'est pas constante).
 > - Cette approche est supérieure à une moyenne qui aurait simplement surestimé la volatilité des ventes futures dans un scénario de baseline et sous-estimé celle des pics d'activité.
 
 ---
