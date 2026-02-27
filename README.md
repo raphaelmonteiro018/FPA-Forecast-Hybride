@@ -43,7 +43,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 ### 2. Analyse de l'incertitude
 
 | Indicateur | Valeur      | Impact Stratégique |
-| :---- | :----    | :---- |
+| :--- | :----    | :--- |
 | **Ratio d'incertitude** | **4.72x**  | Le risque de rupture est 4.7 fois plus élevé lors des pics d'activité saisonniers |
 | **Incertitude Baseline** | **3.88 %**  | Précision de 96.12% dans 90% de l'année (optimisation du BFR). |
 | **Incertitude Pics** | **18.31 %**  | Marge de sécurité nécessaire pour couvrir la volatilité des pics et assurer les ventes sans passer par la rupture de stocks. |
