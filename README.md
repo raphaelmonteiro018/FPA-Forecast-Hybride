@@ -3,7 +3,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 
 ## 🎯 Objectifs
 - Evaluer dynamiquement chaque point de vente à travers un benchmark de modèles statistiques.
-- Mesurer la précision des modèles via l'indicateur WAPE (Weighted Absolute Percentage Error) et conserver le modèle le plus performant par magasin.
+- Mesurer la précision des modèles via l'indicateur WAPE (Weighted Absolute Percentage Error), y ajouter un facteur multiplicatif selon le régime d'activité, et conserver le modèle le plus performant par magasin.
 - Justifier les choix de modélisation à l'aide d'une méthode documentée et reproductible.
 
 ## 🔍 Récupération du dataset & Analyse visuelle de la série temporelle
