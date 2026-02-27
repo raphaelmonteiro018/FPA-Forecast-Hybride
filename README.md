@@ -8,7 +8,7 @@ Ce projet a pour but de fournir une vision fiable et robuste de la trajectoire c
 - Optimiser le reporting : Automatiser la consolidation des données et la création d'un Excel directement exploitable sous Power BI. Garantir une mise à jour peu chronophage.
 
 ## 🚀 Résultats
-- Fiabilité des projections : 94% de précision sur le modèle global (dont 96% de précision en scénario "baseline" et 82% de précision en scénario "extreme").
+- Fiabilité des projections : 94% de précision sur le modèle global (dont 96% de précision en scénario "baseline" et 87% de précision en scénario "extreme").
 - Validation des modèles : Entrainement et test du benchmark sur un historique de 26 semaines (~6 mois) avant toute tentative de projection.
 - Aide à la décision : Réduction de l'incertitude globale sous le seuil des 6% grâce à un arbitrage entre plusieurs modèles et à l'application d'un intervalle de confiance dynamique.
 - Gain de productivité : Automatisation complète du reporting (du calcul Python à la visualisation sous Power BI), garantissant une mise à jour rapide et sans saisie manuelle.
