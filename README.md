@@ -28,11 +28,11 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 
 | Métrique | REGIME 1 (Baseline) | REGIME 2 (Pics) |
 | :--- | :--- | :--- |
-| **Nb. Semaines** | 128 (90%) | 15 (10%) |
-| **CA Moyen (μ)** | **45,767,633 $** | **58,597,458 $** |
-| **Écart-type (σ)** | 2,132,545 $ | **10,075,269 $** |
+| **Poids Temporel** | 128 semaines (90%) | 15 semaines (10%) |
+| **CA Moyen (μ)** | 45,767,633 $| 58,597,458$ |
+| **Écart-type (σ)** | 2,132,545 $| 10,075,269$ |
 | **Volatilité (CV)** | **4.66 %** | **17.19 %** |
-| **Amplitude CA** | [39.6M$ - 49.7M$] | [49.9M$ - 80.9M$] |
+| **Amplitude CA** | [39.6M$ - 49.8M$] | [49.9M$ - 80.9M$] |
 
 > **💡 Diagnostic :**
 > - L'écart-type est multiplié par **4.7** lors du passage de l'activité "normale" aux pics. Cette explosion de la volatilité des ventes prouve l'**hétéroscédasticité** de la série (l'erreur de prévision n'est pas constante).
@@ -42,12 +42,12 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 
 ### 2. Analyse de l'incertitude
 
-| Indicateur | Valeur      | Impact Stratégique |
-| :--- | :----    | :--- |
-| **Ratio d'incertitude** | **4.72x**  | Le risque de rupture est 4.7 fois plus élevé lors des pics d'activité saisonniers |
-| **Incertitude Baseline** | **3.88 %**  | Précision de 96.12% dans 90% de l'année (optimisation du BFR). |
-| **Incertitude Pics** | **18.31 %**  | Marge de sécurité nécessaire pour couvrir la volatilité des pics et assurer les ventes sans passer par la rupture de stocks. |
-| **Valeur du point de WAPE** | **~471 k$**  | Pour chaque point d'incertitude réduit, le BFR peut-etre optisé en réduisant les dépenses liées aux stocks|
+| Indicateur | Valeur | Impact Stratégique |
+| :--- | :--- | :--- |
+| **Ratio de Volatilité Brut** | **4.72x** | La nervosité du marché est multipliée par 4.7 lors des pics saisonniers. |
+| **Marge Baseline** | **5.82 %** | ($3.88\% \times 1.5$) Précision cible pour une gestion en flux tendus. |
+| **Marge Pics (Lissée)** | **12.64 %** | Protection renforcée via lissage $\sqrt{\sigma}$ pour optimiser le BFR. |
+| **Valeur du point de WAPE** | **~471 k$** | Gain potentiel sur le BFR pour chaque point d'incertitude réduit. |
 
 > **💡 Diagnostic :** En isolant le régime "pics" le chiffre d'affaires est sécurisé. On accepte une incertitude de 18.31% sur les 10% des semaines avec les plus fortes ventes pour garantir un taux de service maximal, tout en maintenant une gestion tendue le reste de l'année (incertitude de 3.88% pour la baseline).
 
@@ -79,10 +79,10 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 ## 🛡️ Sécurisation des Prévisions
 Plutôt que d'appliquer des bornes fixes, le modèle adapte ses intervalles de confiance en fonction du régime d'activité identifié lors de l'audit statistique.
 
-| Régime Détecté | Logique d'Incertitude | WAPE Cible | Stratégie de Stock |
+| Régime Détecté | Logique d'Incertitude | Marge de Sécurité | Stratégie de Stock |
 | :--- | :--- | :--- | :--- |
-| **Baseline** | Activité standard (< 49.88 M$) | **3.88 %** | **Flux tendus** : Réduction maximale de l'immobilisation financière. |
-| **Extreme Peaks** | Pics saisonniers (> 49.88 M$) | **18.31 %** | **Marge de sécurité** : Élargissement du tunnel pour couvrir la volatilité (Risk-Off). |
+| **Baseline** | Erreur brute $\times$ Buffer | **5.82 %** | **Flux tendus** : Immobilisation financière minimale. |
+| **Extreme Peaks** | Buffer $\times$ Lissage $\sqrt{\sigma}$ | **12.64 %** | **Risk-Off** : Couverture des pics sans surstockage abusif. |
 
 > **💡 Note :** Le passage du WAPE de 3.88% à 18.31% n'est pas une perte de performance, mais une **calibration sur le risque réel**. En multipliant les bornes de confiance par **4.72** lors des pics, le modèle garantit un taux de service optimal là où un modèle standard et l'utilisation d'une moyenne provoquerait des ruptures massives.
 
@@ -91,15 +91,15 @@ Plutôt que d'appliquer des bornes fixes, le modèle adapte ses intervalles de c
 ## 📊 Performance des modèles
 L'intérêt majeur de ma méthode réside dans la **mise en compétition systématique** des modèles. Au lieu d'appliquer une méthode unique à l'ensemble du réseau, l'algorithme sélectionne dynamiquement le modèle le plus performant pour chaque point de vente. Créer 3 approches et ajouter de la complexité a pour unique vocation de servir l'opérationnel de la manière la plus fiable possible, et non démontrer une performance purement technique.
 
-| Méthode de prévision | Score WAPE (Erreur pondérée) |
-| :--- | :--- |
-| **Benchmark Naïf** (Référence $y-52$) | 8,20 % |
-| **Benchmark Holt-Winters** (Statistique) | 4,39 % |
-| **Benchmark XGBoost** (Machine Learning) | 5,12 % |
-| **Sélection Automatique (Best Model per Store)** | **3,88 %** |
+| Méthode de prévision | Score WAPE (Erreur pondérée) | Status |
+| :--- | :--- | :--- |
+| **Benchmark Naïf** (Référence $y-52$) | 8,20 % | Rejeté (Baseline) |
+| **Benchmark Holt-Winters** (Statistique) | 4,39 % | Challenger |
+| **Benchmark XGBoost** (Machine Learning) | 5,12 % | Challenger |
+| **Sélection Automatique (Best Model)** | **3,88 %** | **Champion** |
 
 > [!IMPORTANT]
-> **Lecture du résultat** : En ne retenant que le meilleur modèle par magasin (celui ayant la plus faible erreur historique), nous atteignons une précision réseau de **96,12 %** (soit un WAPE de 3,88 %).
+> **Lecture du résultat** : En ne retenant que le meilleur modèle par magasin (celui ayant la plus faible erreur historique), nous atteignons une précision réseau de **96,12 %** (soit un WAPE de 3,88 % hors buffer).
 > → **Gain de précision de ~53 %** par rapport à la méthode naïve, divisant ainsi l'incertitude par deux, la complexité des approches est donc mathématiquement justifiée.
 
 ---
