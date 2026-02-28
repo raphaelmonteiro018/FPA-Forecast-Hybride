@@ -84,7 +84,7 @@ Plutôt que d'appliquer des bornes fixes, le modèle adapte ses intervalles de c
 | **Baseline** | Erreur brute $\times$ Buffer | **5.82 %** | **Flux tendus** : Immobilisation financière minimale. |
 | **Extreme Peaks** | Erreur brute $\times$ Lissage $\sqrt{4.72}$ $\times$ Buffer | **12.64 %** | **Risk-Off** : Couverture des pics sans surstockage abusif. |
 
-> **💡 Note :** L'élargissement de l'enveloppe de sécurité (de 5.82% à 12.64%) n'est pas une dégradation de la performance du modèle, mais une calibration dynamique sur le risque réel. Bien que la volatilité brute soit multipliée par 4.72, l'ajustement par lissage (racine carrée de 4.72 = 2,17) permet de garantir un taux de service optimal durant les pics, là où un modèle standard (homoscédastique) provoquerait des ruptures massives par sous-estimation du risque.
+> **💡 Note :** L'élargissement de l'enveloppe de sécurité (de 5.82% à 12.64%) n'est pas une dégradation de la performance du modèle, mais une calibration dynamique sur le risque réel. Bien que la volatilité brute soit multipliée par 4.72, l'ajustement par lissage (racine carrée de 4.72 = 2,17) permet de garantir un taux de service optimal durant les pics, là où un modèle standard provoquerait des ruptures massives par sous-estimation de la volatilité. 
 
 ---
 
