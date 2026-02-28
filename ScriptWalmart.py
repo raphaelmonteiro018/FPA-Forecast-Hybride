@@ -1,5 +1,4 @@
 # =============================================================================
-# WALMART DEMAND FORECASTING ENGINE – VERSION V22
 # ARCHITECTURE : MODÉLISATION HYBRIDE (XGBOOST / HOLT-WINTERS / NAÏVE)
 # GESTION DYNAMIQUE DE L'HÉTÉROSCÉDASTICITÉ ET DES RÉGIMES DE VOLATILITÉ
 # =============================================================================
@@ -221,6 +220,13 @@ with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
     df_synthese.to_excel(writer, sheet_name="Synthèse_Audit", index=False)
     for s in ["Histo_Prévisions_Par_Magasins", "Histo_Prévisions_Consolidées"]:
         writer.sheets[s].set_column('C:F', None, fmt)
+
+df_base_stats = df_conso_audit[df_conso_audit['y'] <= p90_threshold]
+df_peak_stats = df_conso_audit[df_conso_audit['y'] > p90_threshold]
+mu_base = df_base_stats['y'].mean()
+mu_peak = df_peak_stats['y'].mean()
+cv_base = (std_base / mu_base) * 100
+cv_peak = (std_peak / mu_peak) * 100
 
 # =============================================================================
 # 5. BLOC D'ANALYSE DESCRIPTIVE (CONSOLIDATION FINALE)
