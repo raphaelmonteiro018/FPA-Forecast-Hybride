@@ -13,7 +13,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 #### Analyse simple de la série temporelle : Consolidation des données historiques et visualisation de la distribution des ventes ci-dessous.
 <img width="1238" height="378" alt="image" src="https://github.com/user-attachments/assets/111a0656-9045-4e80-9afa-49805a164c24" />
 
-#### Analyse : D'après la période étudiée (données de début 2010 à fin 2011), l'activité des 45 magasins Walmart est extremement saisonnière, notre distribution prend une forme bimodale (deux modes d'activité), ce qui justifie une approche poussée via Python.
+#### Analyse : D'après la période étudiée (données de début 2010 à fin 2011), l'activité des 45 magasins Walmart est extrêmement saisonnière, notre distribution prend une forme bimodale (deux modes d'activité), ce qui justifie une approche poussée via Python.
 
 #### Conséquence : L'intensité de l'activité est représentée par deux régimes distincts (baseline / pics) pour lesquels les intervalles de confiance doivent être adaptés dynamiquement pour refléter la différence de tailles des erreurs (hétéroscédasticité) entre les deux régimes.
 - Exemple : En scénario stable les déviations à la moyenne (écart-type, unité qui mesure l'intensité de la dispersion des données autour de leur moyenne) vont etre beaucoup plus faibles que sur les scénarios de pics d'activité. Plus simplement, la série a tendance à rompre sa moyenne momentanément, ces moments doivent faire l'objet d'une attention particulière.
@@ -23,8 +23,8 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 ### 1. Comparaison des régimes d'activité
 > **💡 Diagnostic :**
 > - La segmentation de l'activité a été réalisée par le choix du 90ème Percentile des ventes hebdomadaires consolidées.
-> - Le point de bascule du régime "baseline" au régime "pics" a été statisquement quantifié à 49.88 M$ (voir tableau ci-dessous). Dans 90% du temps, le montant total des ventes est situé sous ce seuil.
-> - Ce choix permet d'isoler mathématiquement la "Queue de distribution" (Tail Risk), c'est-à-dire les 10% d'événements "extremes".
+> - Le point de bascule du régime "baseline" au régime "pics" a été statistiquement quantifié à 49.88 M$ (voir tableau ci-dessous). Dans 90% du temps, le montant total des ventes est situé sous ce seuil.
+> - Ce choix permet d'isoler mathématiquement la "Queue de distribution" (Tail Risk), c'est-à-dire les 10% d'événements "extrêmes".
 
 | Métrique | REGIME 1 (Baseline) | REGIME 2 (Pics) |
 | :--- | :--- | :--- |
