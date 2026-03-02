@@ -4,14 +4,14 @@ Ce projet a pour but de fournir une vision fiable et robuste de la trajectoire c
 ## 🎯 Objectifs
 - Anticiper la trajectoire des ventes : Projeter les revenus du réseau sur un horizon de 8 semaines afin de s'adapter aux variations de l'activité.
 - Superviser la performance : Fournir un outil d'arbitrage permettant de trouver le juste équilibre entre la sécurité des stocks (éviter les ruptures) et l'optimisation de la trésorerie (éviter le surplus).
-- Fiabiliser les chiffres et auditer le traitement de la donnée : Proposer un code auditable et une méthodologie documentée, permettant de justifier les chiffres affichés avec une précision de 94%.
-- Optimiser le reporting : Automatiser la consolidation des données et la création d'un Excel directement exploitable sous Power BI. Garantir une mise à jour peu chronophage.
+- Fiabiliser les chiffres et auditer le traitement de la donnée : Proposer un code auditable et une méthodologie documentée, permettant de justifier les chiffres affichés.
+- Optimiser le reporting : Automatiser la consolidation des données et la création d'un Excel directement exploitable sous Power BI.
 
 ## 🚀 Résultats
-- Fiabilité des projections : 94% de précision sur le modèle global (dont 96% de précision en scénario "baseline" et 87% de précision en scénario "extreme").
-- Validation des modèles : Entrainement et test du benchmark sur un historique de 26 semaines (~6 mois) avant toute tentative de projection.
-- Aide à la décision : Réduction de l'incertitude globale sous le seuil des 6% grâce à un arbitrage entre plusieurs modèles et à l'application d'un intervalle de confiance dynamique.
-- Gain de productivité : Automatisation complète du reporting (du calcul Python à la visualisation sous Power BI), garantissant une mise à jour rapide et sans saisie manuelle.
+- Fiabilité des projections : 94% de précision en scénario "baseline" et 87% de précision en scénario "extreme" (scores incluant un buffer conservateur de x1.5 sur les bornes de confiance).
+- Validation des modèles : Entrainement et test du benchmark sur un historique de 26 semaines (~6 mois) avant toute tentative de projection (split train/test out of sample).
+- Aide à la décision : Réduction de l'incertitude globale grâce à un arbitrage entre plusieurs modèles permettant de ne garder que le plus performant et à l'application d'un intervalle de confiance dynamique.
+- Gain de productivité : Automatisation complète du reporting (du calcul Python à la visualisation sous Power BI), garantissant une mise à jour rapide.
 
 ## 🔁 Workflow
 1. Récupération du dataset Walmart (donnée open-source sur le site Kaggle) et préparation du fichier source.
