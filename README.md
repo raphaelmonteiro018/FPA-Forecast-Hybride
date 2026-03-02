@@ -1,4 +1,4 @@
-<img width="653" height="344" alt="image" src="https://github.com/user-attachments/assets/ec145d95-e8bd-4624-bc80-7d46be17f3ac" /># 📈 Méthodologie & Performance des modèles
+# 📈 Méthodologie & Performance des modèles
 Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'architecture construite à partir de Python transforme un historique brut en une projection fiable.
 
 ## 🎯 Objectifs
