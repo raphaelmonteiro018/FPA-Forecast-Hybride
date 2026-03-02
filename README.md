@@ -47,7 +47,7 @@ Cette section détaille le cœur analytique du projet, c'est-à-dire comment l'a
 | **Ratio de Volatilité Brut** | **4.72x** | La nervosité du marché est multipliée par 4.7 lors des pics saisonniers. |
 | **Marge Baseline** | **5.82 %** | ($3.88\% \times 1.5$) Précision cible pour une gestion en flux tendus. |
 | **Marge Pics (Lissée)** | **12.64 %** | Protection renforcée via lissage $\sqrt{\sigma}$ pour optimiser le BFR. |
-| **Valeur du point de WAPE sur le BFR** | **~377K $** | Le point de WAPE appliqué aux ventes est de 471K $, la marge brute des enseignes comme Walmart tournant autour de 20% on applique un coefficient 0.8 pour retomber sur la valeur du point de WAPE en cout d'achat des marchandises. |
+| **Valeur du point de WAPE sur le BFR** | **~377K $** | Le WAPE étant calculé sur les ventes, un coefficient 0.80 est appliqué (marge brute grande consommation ~20%) pour convertir la valeur brute de 471 k$/point en coût d'achat des marchandises, reflet réel du capital immobilisé. |
 
 > **💡 Diagnostic :** En isolant le régime "pics", le chiffre d'affaires est sécurisé sans immobilisation excessive de capital. On accepte une incertitude de 12.64 % sur les 10 % des semaines de forte activité (au lieu des 18.31 % théoriques non lissés) pour garantir un taux de service maximal, tout en maintenant une gestion en flux tendus le reste de l'année (5.82 % de marge pour la baseline).
 
