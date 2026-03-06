@@ -14,6 +14,8 @@ Ce projet a pour but de fournir une vision fiable et robuste de la trajectoire c
 - Aide à la décision : Réduction de l'incertitude globale grâce à un arbitrage entre plusieurs modèles permettant de ne garder que le plus performant et à l'application d'un intervalle de confiance dynamique.
 - Gain de productivité : Automatisation complète du reporting (du calcul Python à la visualisation sous Power BI), garantissant une mise à jour rapide.
 
+<img width="923" height="404" alt="image" src="https://github.com/user-attachments/assets/9eedbd67-0bc3-4fae-9390-5c33d45228f6" />
+
 ## 🔁 Workflow
 1. Récupération du dataset Walmart (donnée open-source sur le site Kaggle) et préparation du fichier source.
 2. Déploiement d'un moteur d'analyse sous Python : 3 approches de modélisation sont mises en compétition sur les séries temporelles de chaque magasin.
