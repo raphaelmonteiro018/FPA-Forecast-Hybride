@@ -10,7 +10,7 @@ Ce projet a pour but de fournir une vision fiable et robuste de la trajectoire c
 ## 🚀 Résultats
 - Fiabilité des projections : 94% de précision en scénario "baseline" et 87% de précision en scénario "extreme" (scores incluant un buffer conservateur de x1.5 sur les bornes de confiance).
 - Réduction du cash immobilisé : Le BFR est désormais optimisé car chaque point de précision gagné équivaut à 377K $ de capital libéré sur le réseau. Le passage d'une méthode naive (qui consiste à faire y-52) à ma méthode d'arbitrage permet de gagner 4,32 points de précision, cela représente environ 1,6M $ de cash disponible immédiatement.
-- Validation des modèles : Entrainement et test du benchmark sur un historique de 26 semaines (~6 mois) avant toute tentative de projection (split train/test out of sample).
+- Validation des modèles : Entrainement sur 2 ans puis test du benchmark sur un historique de 26 semaines (~6 mois) avant toute tentative de projection (split train/test out of sample).
 - Aide à la décision : Réduction de l'incertitude globale grâce à un arbitrage entre plusieurs modèles permettant de ne garder que le plus performant et à l'application d'un intervalle de confiance dynamique.
 - Gain de productivité : Automatisation complète du reporting (du calcul Python à la visualisation sous Power BI), garantissant une mise à jour rapide.
 
