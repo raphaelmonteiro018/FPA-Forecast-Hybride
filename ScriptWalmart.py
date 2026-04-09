@@ -1,6 +1,7 @@
 # =============================================================================
+# WALMART FORECASTING ENGINE
 # ARCHITECTURE : MODÉLISATION HYBRIDE (XGBOOST / HOLT-WINTERS / NAÏVE)
-# GESTION DYNAMIQUE DE L'HÉTÉROSCÉDASTICITÉ ET DES RÉGIMES DE VOLATILITÉ
+# GESTION DYNAMIQUE DE L'HÉTÉROSCÉDASTICITÉ PAR SEUILS STATISTIQUES (P90)
 # =============================================================================
 
 import pandas as pd
@@ -11,10 +12,6 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from pandas.tseries.holiday import USFederalHolidayCalendar
 
 def wape(y_true, y_pred):
-    """
-    Weighted Average Percentage Error (WAPE) : Métrique de précision 
-    prioritaire pour les flux à forte saisonnalité et volumes variables.
-    """
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     if np.sum(y_true) == 0:
@@ -31,12 +28,14 @@ df = pd.read_excel(file_path, sheet_name=sheet_name)
 df["ds"] = pd.to_datetime(df["ds"], dayfirst=True)
 df["y"] = df["y"].astype(float)
 
-# ANALYSE DE LA VARIANCE : Calcul du ratio Sigma entre Baseline et Pics (Hétéroscédasticité)
 df_conso_audit = df.groupby('ds')['y'].sum().reset_index()
 p90_threshold = df_conso_audit['y'].quantile(0.90)
+# Seuil local par magasin pour la cohérence des exports
+p90_store_avg = p90_threshold / df["Store"].nunique()
+
 std_base = df_conso_audit[df_conso_audit['y'] <= p90_threshold]['y'].std()
 std_peak = df_conso_audit[df_conso_audit['y'] > p90_threshold]['y'].std()
-hetero_ratio = std_peak / std_base # Coefficient d'ajustement des bornes d'incertitude
+hetero_ratio = std_peak / std_base 
 
 stores = df["Store"].unique()
 output_dir = "PowerBI_Ready"
@@ -48,7 +47,7 @@ all_exports = []
 details_audit = []
 
 # =============================================================================
-# 2. FEATURE ENGINEERING : CALENDRIER ET SIGNAUX SAISONNIERS
+# 2. FEATURE ENGINEERING : CALENDRIER (POUR LES MODÈLES)
 # =============================================================================
 start_date = df["ds"].min()
 end_date = df["ds"].max() + pd.Timedelta(weeks=12)
@@ -56,7 +55,6 @@ end_date = df["ds"].max() + pd.Timedelta(weeks=12)
 cal = USFederalHolidayCalendar()
 holidays = cal.holidays(start=start_date, end=end_date)
 
-# Modélisation spécifique du Black Friday (Levier majeur de volume)
 black_fridays = []
 for year in range(start_date.year, end_date.year + 1):
     thanksgiving = pd.Timestamp(year=year, month=11, day=1) + pd.offsets.Week(weekday=3) + pd.offsets.Week(3)
@@ -64,23 +62,21 @@ for year in range(start_date.year, end_date.year + 1):
 black_fridays = pd.to_datetime(black_fridays)
 
 def get_weekly_flags(date):
-    """Génération de descripteurs binaires pour les périodes de haute activité."""
     week_start = date - pd.Timedelta(days=date.weekday())
     week_end = week_start + pd.Timedelta(days=6)
     has_holiday = ((holidays >= week_start) & (holidays <= week_end)).any()
     has_bf = ((black_fridays >= week_start) & (black_fridays <= week_end)).any()
     week_num = date.isocalendar().week
     month = date.month
-    is_peak = 1 if (month == 11 and week_num in [47, 48]) or (month == 12 and week_num in [51, 52]) else 0
-    return int(has_holiday or has_bf), is_peak
+    # Conservé pour XGBoost (Aide à la prédiction du volume)
+    is_peak_calendar = 1 if (month == 11 and week_num in [47, 48]) or (month == 12 and week_num in [51, 52]) else 0
+    return int(has_holiday or has_bf), is_peak_calendar
 
 df[['Holiday_Flag', 'Peak_Week_Flag']] = df['ds'].apply(lambda d: pd.Series(get_weekly_flags(d)))
-
-# Sélection des prédicteurs (Lags auto-régressifs & Composantes exogènes)
 FEATURES_ORDER = ["Holiday_Flag", "Peak_Week_Flag", "lag_1", "lag_4", "lag_52", "ma_4", "week_of_year"]
 
 # =============================================================================
-# 3. BACKTESTING ET SÉLECTION DU CHAMPION (MODEL TOURNAMENT)
+# 3. BACKTESTING ET SÉLECTION DU CHAMPION
 # =============================================================================
 FACTEUR_INCERTITUDE = 1.5
 HORIZON = 8
@@ -95,30 +91,22 @@ for store_id in stores:
     train_df = temp.dropna().reset_index(drop=True)
 
     if len(train_df) > 60:
-        # Split temporel pour validation hors-échantillon
         train_bench = train_df.iloc[:-HORIZON_TEST].copy()
         test_bench = train_df.iloc[-HORIZON_TEST:].copy()
 
-        # Benchmarking : Modèle Naïf Saisonnier
         preds_naif = temp["y"].shift(52).iloc[test_bench.index]
         score_naif = wape(test_bench["y"], preds_naif)
 
-        # Benchmarking : Holt-Winters (Saisonnalité additive)
-        score_hw = 999.0
         try:
-            hw_train = temp["y"].iloc[:-HORIZON_TEST]
-            hw_test = temp["y"].iloc[-HORIZON_TEST:]
-            hw_model = ExponentialSmoothing(hw_train, trend="add", seasonal="add", seasonal_periods=52).fit(optimized=True)
+            hw_model = ExponentialSmoothing(temp["y"].iloc[:-HORIZON_TEST], trend="add", seasonal="add", seasonal_periods=52).fit(optimized=True)
             preds_hw = hw_model.forecast(HORIZON_TEST)
-            score_hw = wape(hw_test, preds_hw)
+            score_hw = wape(test_bench["y"], preds_hw)
         except: score_hw = 999.0
 
-        # Benchmarking : XGBoost avec Inférence Récursive
         model_xgb = xgb.XGBRegressor(n_estimators=100, learning_rate=0.05, max_depth=5, random_state=42)
         model_xgb.fit(train_bench[FEATURES_ORDER], train_bench["y"])
-
-        preds_rec = []
-        hist_rec = train_bench.copy()
+        
+        preds_rec, hist_rec = [], train_bench.copy()
         for i in range(HORIZON_TEST):
             nxt_dt = test_bench["ds"].iloc[i]
             h_f, p_f = get_weekly_flags(nxt_dt)
@@ -126,27 +114,20 @@ for store_id in stores:
             p_val = model_xgb.predict(d_input[FEATURES_ORDER])[0]
             preds_rec.append(p_val)
             hist_rec = pd.concat([hist_rec, pd.DataFrame({"ds": [nxt_dt], "y": [p_val]})], ignore_index=True)
-
         score_rec = wape(test_bench["y"], preds_rec)
-        
-        # Sélection du modèle ayant le WAPE minimal
+
         scores = {"Naïf": score_naif, "Holt-Winters": score_hw, "XGB_Recursive": score_rec}
         best_model_name = min(scores, key=scores.get)
         best_wape = scores[best_model_name]
-
-        print(f"Magasin {store_id:>2} | Naïf: {score_naif:5.2f}% | HW: {score_hw:5.2f}% | XGB: {score_rec:5.2f}% --> Champion: {best_model_name}")
     else:
         best_model_name, best_wape, score_naif, score_hw, score_rec = "Naïf", 0, 0, 0, 0
 
-    # ENTRAÎNEMENT FINAL SUR L'ENSEMBLE DES DONNÉES DISPONIBLES
+    # ENTRAÎNEMENT FINAL
     future_dates = pd.date_range(start=temp["ds"].max() + pd.Timedelta(weeks=1), periods=HORIZON, freq="W-FRI")
-
     if best_model_name == "Holt-Winters":
-        final_hw = ExponentialSmoothing(temp["y"], trend="add", seasonal="add", seasonal_periods=52).fit()
-        preds_final = final_hw.forecast(HORIZON)
+        preds_final = ExponentialSmoothing(temp["y"], trend="add", seasonal="add", seasonal_periods=52).fit().forecast(HORIZON)
     elif best_model_name == "XGB_Recursive":
-        final_xgb = xgb.XGBRegressor(n_estimators=100, learning_rate=0.05, max_depth=5, random_state=42)
-        final_xgb.fit(train_df[FEATURES_ORDER], train_df["y"])
+        final_xgb = xgb.XGBRegressor(n_estimators=100, learning_rate=0.05, max_depth=5, random_state=42).fit(train_df[FEATURES_ORDER], train_df["y"])
         preds_final, hist_final = [], train_df.copy()
         for i in range(HORIZON):
             nxt_dt = future_dates[i]
@@ -167,24 +148,24 @@ for store_id in stores:
 
     p_data = pd.DataFrame({"ds": future_dates, "Ventes": preds_final, "Store": store_id, "Type": "Prévision"})
     
-    # CALCUL DES BORNES ADAPTATIVES (Gestion du risque par régime de volatilité)
-    def calc_adaptive_bounds_with_flag(row):
-        _, is_peak = get_weekly_flags(row['ds'])
+    # CALCUL DES BORNES : TRIGGER DATA-DRIVEN (Basé sur le CA prédit vs Seuil P90 local)
+    def calc_adaptive_bounds_data_driven(row):
+        is_peak_val = 1 if row['Ventes'] >= p90_store_avg else 0
         local_err = (best_wape / 100) * FACTEUR_INCERTITUDE
-        if is_peak:
-            local_err *= np.sqrt(hetero_ratio) # On tempère l'effet de l'hétéroscédasticité
-        return row['Ventes'] * (1 + local_err), row['Ventes'] * (1 - local_err), int(not is_peak)
+        if is_peak_val:
+            local_err *= np.sqrt(hetero_ratio)
+        return row['Ventes'] * (1 + local_err), row['Ventes'] * (1 - local_err), int(not is_peak_val)
 
-    res = p_data.apply(calc_adaptive_bounds_with_flag, axis=1)
+    res = p_data.apply(calc_adaptive_bounds_data_driven, axis=1)
     p_data["yhat_upper"], p_data["yhat_lower"], p_data["Flag_Baseline"] = zip(*res)
 
     h_data = temp[["ds", "y"]].rename(columns={"y": "Ventes"}).assign(Store=store_id, Type="Réel", yhat_upper=np.nan, yhat_lower=np.nan)
-    h_data["Flag_Baseline"] = h_data["ds"].apply(lambda d: 1 if get_weekly_flags(d)[1] == 0 else 0)
+    h_data["Flag_Baseline"] = h_data["Ventes"].apply(lambda v: 1 if v <= p90_store_avg else 0)
     
     all_exports.extend([h_data, p_data])
 
 # =============================================================================
-# 4. CONSOLIDATION FINALE ET EXPORT BI-READY
+# 4. CONSOLIDATION FINALE ET EXPORT BI-READY (STRICTEMENT IDENTIQUE V22)
 # =============================================================================
 df_export_final = pd.concat(all_exports, ignore_index=True)
 df_audit_results = pd.DataFrame(details_audit)
@@ -193,14 +174,21 @@ ratio_global = (wape_global / 100) * FACTEUR_INCERTITUDE
 
 df_export_final = df_export_final[["Store", "ds", "Ventes", "yhat_upper", "yhat_lower", "Type", "Flag_Baseline"]]
 
-# Agrégation pour la vue consolidée (Corporate View)
 df_conso = df_export_final.groupby(["ds", "Type"]).agg({"Ventes": "sum"}).reset_index()
 df_conso["yhat_upper"], df_conso["yhat_lower"] = df_conso["Ventes"], df_conso["Ventes"]
 mask_prev = df_conso["Type"] == "Prévision"
-df_conso.loc[mask_prev, "yhat_upper"] *= (1 + ratio_global)
-df_conso.loc[mask_prev, "yhat_lower"] *= (1 - ratio_global)
+
+# Consolidation avec Trigger P90 Global
+for i, row in df_conso[mask_prev].iterrows():
+    is_peak_conso = 1 if row['Ventes'] >= p90_threshold else 0
+    err_ratio = (wape_global / 100) * FACTEUR_INCERTITUDE
+    if is_peak_conso:
+        err_ratio *= np.sqrt(hetero_ratio)
+    df_conso.at[i, "yhat_upper"] *= (1 + err_ratio)
+    df_conso.at[i, "yhat_lower"] *= (1 - err_ratio)
+
 df_conso.loc[~mask_prev, ["yhat_upper", "yhat_lower"]] = np.nan
-df_conso["Flag_Baseline"] = df_conso["ds"].apply(lambda d: 1 if get_weekly_flags(d)[1] == 0 else 0)
+df_conso["Flag_Baseline"] = df_conso["Ventes"].apply(lambda v: 1 if v <= p90_threshold else 0)
 
 df_synthese = pd.DataFrame([{
     "WAPE_Global_Baseline": wape_global, 
@@ -211,7 +199,7 @@ df_synthese = pd.DataFrame([{
     "Ratio_Hetero": hetero_ratio
 }])
 
-filename = f"{output_dir}/Walmart_Forecast_V22_Clean.xlsx"
+filename = f"{output_dir}/Walmart_Forecast_V23_Clean.xlsx"
 with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
     fmt = writer.book.add_format({'num_format': '#,##0.00'})
     df_export_final.to_excel(writer, sheet_name="Histo_Prévisions_Par_Magasins", index=False)
@@ -221,25 +209,18 @@ with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
     for s in ["Histo_Prévisions_Par_Magasins", "Histo_Prévisions_Consolidées"]:
         writer.sheets[s].set_column('C:F', None, fmt)
 
+# =============================================================================
+# 5. BLOC D'ANALYSE DESCRIPTIVE
+# =============================================================================
 df_base_stats = df_conso_audit[df_conso_audit['y'] <= p90_threshold]
 df_peak_stats = df_conso_audit[df_conso_audit['y'] > p90_threshold]
-mu_base = df_base_stats['y'].mean()
-mu_peak = df_peak_stats['y'].mean()
-cv_base = (std_base / mu_base) * 100
-cv_peak = (std_peak / mu_peak) * 100
+mu_base, mu_peak = df_base_stats['y'].mean(), df_peak_stats['y'].mean()
+cv_base, cv_peak = (std_base / mu_base) * 100, (std_peak / mu_peak) * 100
 
-# =============================================================================
-# 5. BLOC D'ANALYSE DESCRIPTIVE (CONSOLIDATION FINALE)
-# =============================================================================
-# Calculs préparatoires
-std_base = df_conso_audit[df_conso_audit['y'] <= p90_threshold]['y'].std()
-std_peak = df_conso_audit[df_conso_audit['y'] > p90_threshold]['y'].std()
-ratio_sigma = std_peak / std_base
+ratio_sigma = hetero_ratio
 coeff_lissage = np.sqrt(ratio_sigma)
-
-wape_champion = (df_audit_results["WAPE_Champion"] * df_audit_results["Poids"]).sum()
+wape_champion = wape_global
 marge_baseline = wape_champion * FACTEUR_INCERTITUDE
-# La marge Pics conserve le buffer (1.5) et y applique le lissage racine
 marge_pics = marge_baseline * coeff_lissage 
 
 print("\n" + "="*95)
