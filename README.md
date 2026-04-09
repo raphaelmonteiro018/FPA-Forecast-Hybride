@@ -47,31 +47,7 @@ La mise à jour du rapport suit un processus en 3 étapes :
 
 ## ⚠️ Limites connues & Pistes d'amélioration
 
-L'architecture actuelle repose sur deux choix de modélisation qui constituent des simplifications assumées. Elles sont documentées ici dans un souci de transparence et d'auditabilité.
-
----
-
-### Limite 1 — Détection du régime "pics" par flag calendaire fixe
-
-**Ce qui est implémenté :**
-La fonction `get_weekly_flags` déclenche le régime "pics" uniquement sur des semaines calendaires prédéfinies :
-```python
-is_peak = 1 if (month == 11 and week_num in [47, 48]) or 
-               (month == 12 and week_num in [51, 52]) else 0
-```
-
-Le coefficient d'élargissement des bornes sur les semaines "extremes" s'applique donc de manière **binaire et identique** sur ces 4 semaines pour tous les magasins, indépendamment du niveau de ventes réel du magasin concerné.
-
-**Conséquence observable :**
-- Un magasin au comportement erratique reçoit un élargissement de ses bornes sur des semaines fixes, indépendamment du niveau réel des ventes.
-- À l'inverse, un magasin dont les pics d'activité seraient concentrés sur une autre période (fête locale, événement saisonnier spécifique) ne bénéficierait d'aucun élargissement adapté.
-
-**Piste d'amélioration :**
-- Calculer le seuil des **10% des ventes les plus importantes par magasin** et détecter dynamiquement le régime d'activité en comparant chaque semaine à ce seuil local.
-
----
-
-### Limite 2 — Amplitude des bornes : architecture hybride
+### Limite — Amplitude des bornes : architecture hybride
 
 **Ce qui est implémenté :**
 L'architecture actuelle est hybride :
@@ -95,5 +71,3 @@ def calc_local_hetero_ratio(store_df, p90_threshold):
 
 ## ✅ Pour aller plus loin
 La structure du moteur est conçue pour être dupliquée sur tout réseau de points de vente disposant d'un historique hebdomadaire. L'intégration de variables externes (météo, inflation, politiques commerciales) est possible sans refondre le moteur, il suffit d'ajouter les régresseurs dans le script `ScriptWalmart.py`.
-
-Les deux pistes d'amélioration documentées ci-dessus constituent une évolution naturelle vers un modèle **100% bottom-up**, où chaque magasin disposerait de son propre régime de détection et de son propre ratio d'hétéroscédasticité.
