@@ -52,10 +52,10 @@ La mise à jour du rapport suit un processus en 3 étapes :
 **Ce qui est implémenté :**
 L'architecture actuelle est hybride :
 - **Amplitude des bornes → bottom-up** : calculée à partir du WAPE individuel de chaque magasin. Un magasin régulier (WAPE faible) aura des bornes serrées, un magasin volatile (WAPE élevé) aura des bornes larges.
-- **Timing de l'élargissement → top-down** : déclenché par le flag calendaire global, identique pour tous les magasins.
+- **Timing de l'élargissement → top-down** : déclenché par le montant des ventes consolidées lorsque ces dernières dépassent le seuil de franchissement fixé au 90e quantile, identique pour tous les magasins.
 
 **Conséquence observable :**
-Le magasin 32 illustre bien cette logique — ses bornes restent très serrées même en novembre car son WAPE est structurellement bas, malgré le déclenchement du coefficient `sqrt(hetero_ratio)`. À l'inverse, le magasin 38 présente des bornes très larges en fin d'année non pas à cause d'une saisonnalité réelle, mais parce que son WAPE élevé (lié à ses oscillations permanentes) est amplifié par le coefficient calendaire. Néanmoins on remarque que les séries erratiques sont souvent celles avec les ventes les plus faibles, ce qui est également logique car structurellement plus instables.
+Le magasin 32 illustre bien cette logique — ses bornes restent très serrées même en novembre car son WAPE est structurellement bas, malgré le déclenchement du coefficient `sqrt(hetero_ratio)`. À l'inverse, le magasin 38 présente des bornes très larges en fin d'année non pas à cause d'une saisonnalité réelle, mais parce que son WAPE élevé (lié à ses oscillations permanentes) est amplifié par le coefficient des ventes consolidées. Néanmoins on remarque que les séries erratiques sont souvent celles avec les ventes les plus faibles, ce qui est également logique car structurellement plus instables.
 
 **Piste d'amélioration :**
 Combiner les deux améliorations : P90 local pour le timing + WAPE local pour l'amplitude. Le `hetero_ratio` serait alors recalculé **par magasin** entre son régime baseline local et son régime pics local :
